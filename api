@@ -1,0 +1,40 @@
+from fastapi import FastAPI
+import openai
+from pydantic import BaseModel
+import uvicorn
+import nest_asyncio
+from pyngrok import ngrok
+
+# Initialize FastAPI
+app = FastAPI()
+
+# Replace with your OpenAI API key
+openai.api_key = "your_openai_api_key"
+
+class StoryRequest(BaseModel):
+    genre: str
+    prompt: str
+
+@app.post("/generate-story/")
+def generate_story(request: StoryRequest):
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": f"You are a creative storyteller. Generate a {request.genre} story starter."},
+                {"role": "user", "content": request.prompt}
+            ]
+        )
+        return {"story_starter": response["choices"][0]["message"]["content"]}
+    except Exception as e:
+        return {"error": str(e)}
+
+# Apply workaround for running FastAPI in Colab
+nest_asyncio.apply()
+
+# Start ngrok tunnel
+public_url = ngrok.connect(8000)
+print(f"Public URL: {public_url}")
+
+# Start FastAPI server
+uvicorn.run(app, host="0.0.0.0", port=8000)
