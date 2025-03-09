@@ -1,0 +1,7 @@
+import requests
+
+url = "http://1234abcd.ngrok.io/generate-story/"
+data = {"genre": "mystery", "prompt": "A detective finds a strange note in an abandoned house."}
+
+response = requests.post(url, json=data)
+print(response.json())
